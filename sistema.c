@@ -3,10 +3,47 @@
 #include <string.h>
 #include <stdbool.h>
 
-typedef struct {
-	int val;
-	Node* next;
-}Node;
+typedef struct
+{
+	int hora;
+	int minutos;
+}Hora;
+
+typedef struct
+{
+	int dia;
+	int mes;
+	int ano;
+	Hora* hora;
+}DataHora;
+
+typedef struct
+{
+	char* titulo;
+	char** participantes;
+	char* info;
+	char** materialApoio;
+	char* tipo;
+}Atividade;
+
+typedef struct
+{
+	char* identificacao;
+	DataHora* inicio;
+	DataHora* fim;
+	char* responsavel;
+	char* status;
+	Atividade* atividade;
+}Recurso;
+
+/* Begin LList */
+
+struct element{
+	Recurso* val;
+	struct element* next;
+};
+
+typedef struct element Node;
 
 typedef struct {
 	int size;
@@ -14,7 +51,11 @@ typedef struct {
 	Node* head;
 	Node* tail;
 	Node* current;
-}LList;
+} LList;
+
+void msgError(const char* error) {
+	printf("Error: %s \n", error);
+}
 
 void initLList(LList* list) {
 	list->empty = true;
@@ -24,10 +65,10 @@ void initLList(LList* list) {
 	list->current = NULL;
 }
 
-void append(int it, LList* list) {	
+void append(Recurso* it, LList* list) {	
 	Node* temp = (Node*)malloc(sizeof(Node));	
-	temp.val = it;
-	if(size == 0) {
+	temp->val = it;
+	if(list->size == 0) {
 		temp->next = NULL;			
 		list->head = temp;
 	}
@@ -46,16 +87,16 @@ void next(LList* list) {
 	}
 	else {
 		Node* temp = list->current;
-		list->current = temp.next;
+		list->current = temp->next;
 	}
 }
 void prev(LList* list) {
 	if(list->current == list->head) {
-		msgError("Inicio da Lista!")
+		msgError("Inicio da Lista!");
 	}
 	else {
 		Node* temp = list->current;
-		for(list->current = list->head; list->curretn->next != temp; list->next()) {} 
+		for(list->current = list->head; list->current->next != temp; next(list)) {} 
 	}
 	
 }
@@ -65,18 +106,19 @@ void begin(LList* list) {
 void end(LList* list) {
 	list->current = list->tail;
 }
-void moveAt(int pos) {
-	if(pos < 1 || pos > size) {
+void moveAt(int pos, LList* list) {
+	int i = 0;
+	if(pos < 1 || pos > list->size) {
 		msgError("Fora de alcance!");
 	}
 	else {
 		Node* temp = list->current;
-		for(list->current = list->head, int i = 0; i < pos; list->next(), i++) {}
+		for(list->current = list->head, i = 0; i < pos; next(list), i++) {}
 	}
 }
 
-int remove(LList* list) {
-	int num = 0;
+Recurso* remove(LList* list) {
+	Recurso* num = (Recurso*)malloc(sizeof(Recurso));
 	
 	if(list->size == 0) {
 		msgError("Lista Vazia!");
@@ -90,17 +132,17 @@ int remove(LList* list) {
 			list->current = list->head;
 			temp->next = NULL;
 		}
-		else if (list->cuurent == list->tail) {
-			list->prev();
+		else if (list->current == list->tail) {
+			prev(list);
 			list->tail = list->current;
 			list->tail->next = NULL;
 			list->current->next = NULL;
 		}
 		else {
-			list->prev();
+			prev(list);
 			list->current->next = temp->next;
 		}
-		size--;
+		list->size--;
 	}
 	if(list->size == 0) {
 		list->empty = true;
@@ -109,157 +151,73 @@ int remove(LList* list) {
 	return num;
 }
 
-void msgError(string error) {
-	printf("Error: %s \n", error);
-}
-
 /* End LList */
-
-
-
-
-enum nivelAcesso {basico = 0; intermediario = 1, avancado = 2, total = 3};
-
-typedef struct
-{
-	int hora;
-	int minutos;
-}Hora;
-
-typedef struct
-{
-	int dia;
-	int mes;
-	int ano;
-	Hora* hora;
-}DataHora;
 
 typedef struct 
 {
-	string funcao;
+	char* nome;
+	char* email;
+	LList* historicoRecurso;
+	char* funcao;
 	short acesso;
 	bool emAndamento = false;
-}Usuario;
+} Usuario;
 
-typedef struct
-{
-	string indentificacao;
-	DataHora* inicio;
-	DataHora* fim;
-	string responsavel;
-	string status = "Em processo de alocação";
-	Atividade* atividade;
-}Recurso;
-
-typedef struct
-{
-	string info;
-	string tipo;
-}Atividade;
-
-void msgAcessoRestrito() {
-	printf("Você não tem acesso a esta Área!\n");
-}
-
-bool Menu(Usuario* usuario) {
-	bool run = true;
-	int x;
-
-	LList* emProcesso = (LList*)malloc(sizeof(LList));
-	LList* alocado = (LList*)malloc(sizeof(LList));
-	LList* emAndamento = (LList*)malloc(sizeof(LList));
-	LList* concluido = (LList*)malloc(sizeof(LList));
-
-	initLList(emProcesso);
-	initLList(alocado);
-	initLList(emAndamento);
-	initLList(concluido);
-
-	printf("1- Alocar um Recurso\n");
-	printf("2- Acompanhar Recursos\n");
-	printf("3- Consulta\n");
-	printf("4- Relatórios\n");
-	printf("5- Administrar o sistema\n");
-	printf("6- Sair\n>>");
-	scanf("%d", &x);
-
-	switch(x) {
-		case 1:
-			if(usuario->acesso != basico) {
-				alocar(usuario, emProcesso);
-			}
-			else {
-				msgAcessoRestrito();
-			}
-			break;
-		case 2:
-			if(usuario->acesso != basico) {
-				verificarAlocacoes(usuario, emProcesso, emAndamento);
-			}
-			else {
-				msgAcessoRestrito();
-			}
-			break;
-		case 3:
-			consulta();
-			break;
-		case 4:
-			relatorios();
-			break;
-		case 5:
-			if(usuario == total) {
-				admArea();
-			}
-			else {
-				msgAcessoRestrito();
-			}
-			break;
-		case 6:
-			run = false;
-			break;
-		default:
-			msgError("Comando não reconhecido!");
-			break;
-	}
-
-	return run;
-}
-
-
-
-void alocar(Usuario* usuario, LList* emProcesso) {
+void alocar(LList* emProcesso, LList* alocado) {
 	Recurso* recurso = (Recurso*)malloc(sizeof(Recurso));
 
-	printf("Identificação do Recurso\n>>");
+	printf("Identificação do Recurso\n>> ");
 	scanf("%s", &recurso->indentificacao);
 	getchar();
-	printf("Data e Hora início (dd/mm/aaaa 00:00)\n>>");
+	printf("Data e Hora início (dd/mm/aaaa 00:00)\n>> ");
 	scanf("%d/%d/%d %d:%d", &recurso->inicio->dia, &recurso->inicio->mes, &recurso->inicio->ano,
 							 &recurso->inicio->hora->hora, &recurso->inicio->hora->minutos);
 	getchar();
-	printf("Data e Hora término (dd/mm/aaaa 00:00)\n>>");
+	printf("Data e Hora término (dd/mm/aaaa 00:00)\n>> ");
 	scanf("%d/%d/%d %d:%d", &recurso->fim->dia, &recurso->fim->mes, &recurso->fim->ano,
 							 &recurso->fim->hora->hora, &recurso->fim->hora->minutos);
 	getchar();
-	printf("Responsável\n>>");
+	printf("Responsável\n>> ");
 	scanf("%s", &recurso->responsavel);
 	getchar();
 
-	append(recurso);
-
-	return 0;
+	append(recurso, alocado);
 }
 
-void verificarAlocacoes(Usuario* usuario, LList* alocado, LList* emAndamento) {
+void mostrarRecursos(Recurso* recurso) {
+	printf("Identificação: %s\n", recurso->indentificacao);
+	printf("Data e Hora de inicio: %d/%d/%d %d:%d\n", );
+	printf("Data e Hora de término: %d/%d/%d %d:%d\n", );
+	printf("Responsável: %s\n", );
+	printf("Status: %s\n", );
 
-	/*  $ Criar um Menu para:
-			& Confirmar Alocações
-			& Colocar uma descrição no recurso alocado
-		$ A descrição só pode ser feita para recursos que estiverem com o status 'Em Andamento', ou seja,
-		   na lista 'emAndamento'
-	*/
+	printf("ATIVIDADE\n");
+	printf("Título: \n");
+	printf("Descrição: \n");
+	printf("Tipo: \n");
+	//Resto das atividades
+
+}
+
+void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
+	int entrada = 0;
+
 	printf("Alocações pendentes que precisão da sua atenção!\n");
 	printf("\n");
+
+	begin(alocado);
+	for(int i = 0; i < alocado->size; i++) {
+		printf("%d- %s\n", i, alocado->current->val->identificacao);
+		next(alocado);
+	}
+	printf(">> ");
+
+	scanf("%d", &entrada);
+	getchar();
+
+	moveAt(entrada, alocado);
+
+	mostrarRecursos(alocado->current);
 	/*  $ Procurar recursos na lista 'alocado' como responsável este usuário
 		$ Dar a opção de confirmar alocação, se o membro 'emAndamento' estiver false
 		$ Quando confirmada:
@@ -270,6 +228,42 @@ void verificarAlocacoes(Usuario* usuario, LList* alocado, LList* emAndamento) {
 	*/
 }
 
+void concluirAlocacoes(LList* emAndamento, LList* concluido) {
+
+}
+
+void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido, LList* usuario) {
+	int entrada = 0;
+	bool run = true;
+
+	while(run) {
+		printf("1- Iniciar alocações\n");
+		printf("2- Confirmar alocações\n");
+		printf("3- Concluir alocações\n");
+		printf("4- Voltar\n>> ");
+		scanf("%d", &entrada);
+		getchar();
+
+		switch(entrada) {
+			case 1:
+				alocar(emProcesso, alocado);
+				break;
+			case 2:
+				verificarAlocacoes(alocado, emAndamento, usuario);
+				break;
+			case 3:
+				concluirAlocacoes(emAndamento, concluido);
+				break;
+			case 4:
+				run = false;
+				break;
+			default:
+				break;
+		}
+	}
+
+}
+
 void consulta() {
 
 }
@@ -278,29 +272,62 @@ void relatorios() {
 
 }
 
-void admArea() {
+void cadastrarUsuario() {
 
 }
 
-int msgLogin() {
-	int usuario = 0;
+bool menuPrincipal() {
+	bool run = true;
+	int entrada;
+	LList* emProcesso = (LList*)malloc(sizeof(LList));
+	LList* alocado = (LList*)malloc(sizeof(LList));
+	LList* emAndamento = (LList*)malloc(sizeof(LList));
+	LList* concluido = (LList*)malloc(sizeof(LList));
+	LList* usuario = (LList*)malloc(sizeof(LList));
 
-	printf("1- Aluno de Graduação\t4- Professor\n2- Aluno de Mestrado\t5- Pesquisador\n3- Aluno de Doutorado\t6- Administrador\n7- Sair\n>>");
-	scanf("%d", &usuario);
-	getchar();
+	initLList(emProcesso);
+	initLList(alocado);
+	initLList(emAndamento);
+	initLList(concluido);
+	initLList(usuario);
 
-	return usuario;
+	printf("1- Alocar um Recurso\n");
+	printf("2- Consulta\n");
+	printf("3- Relatórios\n");
+	printf("4- Cadastrar novo usuário\n");
+	printf("5- Sair\n>> ");
+	scanf("%d", &entrada);
+
+	switch(entrada) {
+		case 1:
+			menuAlocar(emProcesso, alocado, emAndamento, concluido, usuario);
+			break;
+		case 2:
+			consulta();
+			break;
+		case 3:
+			relatorios();
+			break;
+		case 4:
+			cadastrarUsuario();
+			break;
+		case 5:
+			run = false;
+			break;
+		default:
+			msgError("Comando não reconhecido!");
+			break;
+	}
+
+	return run;
 }
 
 int main(int argc, char** argv) {
-	int entrada = 0;
-	Usuario* usuario = (Usuario*)malloc(sizeof(Usuario));
+	char* user, password;
+	//Usuario* usuario = (Usuario*)malloc(sizeof(Usuario));
 	bool run = true;
 	bool runLogin = false;
 
-
-
-	
 	/*
 	enum usuarios {graduacao, mestrado, doutorado, professores, pesquisadores, administrador};
 	enum recursoInfo {identificacao, inicio, termino, responsavel};
@@ -312,54 +339,24 @@ int main(int argc, char** argv) {
 	*/
 
 	while(runLogin) {
-		entrada = msgLogin();
+		printf("***LOGIN***\nUsuário:\n>> ");
+		scanf("%s", user);
+		getchar();
+		printf("Senha:\n>> ");
+		scanf("%s", password);
+		getchar();
 
-		switch(entrada) {
-			case 1:
-				usuario->funcao = "Aluno de Graduação";
-				usuario->acesso = basico;
-				runLogin = false;
-				break;
-			case 2:
-				usuario->funcao = "Aluno de Mestrado";
-				usuario->acesso = basico;
-				runLogin = false;
-				break;
-			case 3:
-				usuario->funcao = "Aluno de Doutorado";
-				usuario->acesso = basico;
-				runLogin = false;
-				break;
-			case 4:
-				usuario->funcao = "Professor";
-				usuario->acesso = avancado;
-				runLogin = false;
-				break;
-			case 5:
-				usuario->funcao = "Pesquisador";
-				usuario->acesso = intermediario;
-				runLogin = false;
-				break;
-			case 6:
-				usuario->funcao = "Administrador";
-				usuario->acesso = total;
-				runLogin = false;
-				break;
-			case 7:
-				break;
-			default:
-				msgError("Comando não reconhecido!");
-				runLogin = true;
-				break;
-		}
+		/*Verificar o login*/
+		
+		//if /*Se o login estiver correto*/ 
+		//	runLogin = false;
+		//else /*Se o login estiver errado*/
+		
 	}
-
-	
 	
 	while(run) {
-		run = Menu(usuario);
+		run = menuPrincipal();
 	}
 
-	
 	return 0;
 }
