@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+#define ROWS 30
+#define STRING_SIZE 256
+
 /* BEGIN ATIVIDADE */
 struct atividade {
 	char* titulo;
@@ -21,9 +24,24 @@ Atividade* Atividade_new() {
 }
 
 void init_Atividade(Atividade* ativ) {
-	ativ->info   = "";
-	ativ->tipo   = "";
-	ativ->titulo = "";
+	ativ->tipo = malloc(STRING_SIZE * sizeof(char));
+	ativ->info = malloc(STRING_SIZE * sizeof(char));
+	ativ->titulo = malloc(STRING_SIZE * sizeof(char));
+
+	ativ->materialApoio = (char**)malloc(ROWS * sizeof(char*));
+	for (size_t i = 0; i < ROWS; i++) {
+		ativ->materialApoio[i] = (char*)malloc(STRING_SIZE * sizeof(char));
+	}
+
+	ativ->participantes = (char**)malloc(sizeof(char*));
+	for (size_t i = 0; i < ROWS; i++) {
+		ativ->participantes[i] = (char*)malloc(STRING_SIZE * sizeof(char));
+	}
+
+	ativ->info   = "Vazio";
+	ativ->tipo   = "vazio";
+	ativ->titulo = "Vazio";
+
 	ativ->numMaterial = 0;
 	ativ->numParticipantes = 0;
 }
@@ -62,9 +80,15 @@ void setMaterial(Atividade* ativ, char* materiais[]) {
 
 /* BEGIN HORA */
 struct hora {
-	char hora[2];
-	char minutos[2];
+	char* hora;
+	char* minutos;
 };
+
+Hora* Hora_new() {
+	Hora* hora = (Hora*)malloc(sizeof(Hora));
+	initHora(hora);
+	return hora;
+}
 
 void setHora(Hora* hora, char* h) {
 	hora->hora = h;
@@ -73,15 +97,29 @@ void setHora(Hora* hora, char* h) {
 void setMinutos(Hora* min, char* m) {
 	min->minutos = m;
 }
+
+void initHora(Hora* hora) {
+	hora->hora = (char*)malloc(3 * sizeof(char));
+	hora->minutos = (char*)malloc(3 * sizeof(char));
+	
+	hora->hora = "00";
+	hora->minutos = "00";
+}
 /* END HORA */
 
 /* BEGIN DATAHORA */
 struct datahora {
-	char dia[2];
-	char mes[2];
-	char ano[4];
+	char* dia;
+	char* mes;
+	char* ano;
 	Hora* hora;
 };
+
+DataHora* DataHora_new() {
+	DataHora* data = (DataHora*)malloc(sizeof(DataHora));
+	initDataHora(data);
+	return data;
+}
 
 void setDia(DataHora* data, char* d) {
 	data->dia = d;
@@ -93,6 +131,17 @@ void setMes(DataHora* data, char* m) {
 
 void setAno(DataHora* data, char* a) {
 	data->ano = a;
+}
+
+void initDataHora(DataHora* data) {
+	data->dia = (char*)malloc(3 * sizeof(char));
+	data->mes = (char*)malloc(3 * sizeof(char));
+	data->ano = (char*)malloc(5 * sizeof(char));
+	data->hora = Hora_new();
+
+	data->dia = "00";
+	data->mes = "00";
+	data->ano = "0000";
 }
 /* END DATAHORA */
 
@@ -107,14 +156,18 @@ struct recurso {
 };
 
 void initRecurso(Recurso* rec) {
+	rec->identificacao = (char*)malloc(STRING_SIZE * sizeof(char));
+	rec->responsavel = (char*)malloc(STRING_SIZE * sizeof(char));
+	rec->status = (char*)malloc(STRING_SIZE * sizeof(char));
+
+	rec->inicio = DataHora_new();
+	rec->fim = DataHora_new();
+
+	rec->atividade = Atividade_new();
+	
 	rec->status = "Em andamento";
 	rec->identificacao = "Vazio";
 	rec->responsavel = "Vazio";
-	rec->inicio->dia = "00";
-	rec->inicio->mes = "00";
-	rec->inicio->ano = "0000";
-	rec->inicio->hora->hora = "00";
-	rec->inicio->hora->minutos = "00";
 }
 
 Recurso* Recurso_new() {
@@ -158,14 +211,27 @@ struct usuario {
 	char* email;
 	LList* historicoRecurso;
 	char* funcao;
-	short acesso;
+	int acesso;
 	bool emAndamento;
 };
 
 Usuario* Usuario_new() {
 	Usuario* user = malloc(sizeof(Usuario));
-	//init Usuario
+	initUsuario(user);
 	return user;
+}
+
+void initUsuario(Usuario* user) {
+	user->nome = (char*)malloc(STRING_SIZE * sizeof(char));
+	user->email = (char*)malloc(STRING_SIZE * sizeof(char));
+	user->funcao = (char*)malloc(STRING_SIZE * sizeof(char));
+	user->historicoRecurso = LList_new();
+	
+	user->emAndamento = false;
+	user->acesso = 0;
+	user->funcao = "Vazio";
+	user->email = "Vazio";
+	user->nome = "Vazio";
 }
 /* END USUARIO */
 
@@ -187,6 +253,14 @@ void msgError(const char* error) {
 	printf("Error: %s \n", error);
 }
 
+Node* Node_new() {
+
+}
+
+void initNode() {
+
+}
+
 LList* LList_new() {
 	LList* list = malloc(sizeof(LList));
 	initLList(list);
@@ -202,7 +276,7 @@ void initLList(LList* list) {
 }
 
 void append(Recurso* it, LList* list) {
-	Node* temp = (Node*)malloc(sizeof(Node));
+	Node* temp = Node_new();
 	temp->val = it;
 	if (list->size == 0) {
 		temp->next = NULL;
@@ -258,7 +332,7 @@ void moveAt(int pos, LList* list) {
 }
 
 Recurso* removeR(LList* list) {
-	Recurso* num = (Recurso*)malloc(sizeof(Recurso));
+	Recurso* num = Recurso_new();
 
 	if (list->size == 0) {
 		msgError("Lista Vazia!");
@@ -291,3 +365,132 @@ Recurso* removeR(LList* list) {
 	return num;
 }
 /* END LLIST(RECURSO) */
+
+/* BEGIN LLIST(USUARIO) */
+struct userelement{
+	Usuario* val;
+	struct userelement* next;
+};
+
+struct userlinkedlist {
+	int size;
+	bool empty;
+	UNode* head;
+	UNode* tail;
+	UNode* current;
+};
+
+UNode* UNode_new() {
+	UNode* user = (UNode*)malloc(sizeof(UNode));
+	initUNode(user);
+	return user;
+}
+
+void initUNode() {
+
+}
+
+ULList* LList_new() {
+	ULList* list = malloc(sizeof(ULList));
+	initULList(list);
+	return list;
+}
+
+void initULList(ULList* list) {
+	list->empty = true;
+	list->size = 0;
+	list->head = NULL;
+	list->tail = NULL;
+	list->current = NULL;
+}
+
+void append(Usuario* it, ULList* list) {
+	UNode* temp = UNode_new();
+	temp->val = it;
+	if (list->size == 0) {
+		temp->next = NULL;
+		list->head = temp;
+	}
+	else {
+		list->current->next = temp;
+	}
+	list->tail = temp;
+	list->current = temp;
+	list->size++;
+	list->empty = false;
+}
+
+void next(ULList* list) {
+	if (list->current->next == NULL) {
+		msgError("Final da Lista!");
+	}
+	else {
+		UNode* temp = list->current;
+		list->current = temp->next;
+	}
+}
+
+void prev(ULList* list) {
+	if (list->current == list->head) {
+		msgError("Inicio da Lista!");
+	}
+	else {
+		UNode* temp = list->current;
+		for (list->current = list->head; list->current->next != temp; next(list)) {}
+	}
+
+}
+
+void begin(ULList* list) {
+	list->current = list->head;
+}
+
+void end(ULList* list) {
+	list->current = list->tail;
+}
+
+void moveAt(int pos, ULList* list) {
+	int i = 0;
+	if (pos < 1 || pos > list->size) {
+		msgError("Fora de alcance!");
+	}
+	else {
+		UNode* temp = list->current;
+		for (list->current = list->head, i = 0; i < pos; next(list), i++) {}
+	}
+}
+
+Usuario* removeU(ULList* list) {
+	Usuario* num = Usuario_new();
+
+	if (list->size == 0) {
+		msgError("Lista Vazia!");
+	}
+	else {
+		UNode* temp = list->current;
+		num = temp->val;
+		if (list->current == list->head) {
+			temp = list->head;
+			list->head = temp->next;
+			list->current = list->head;
+			temp->next = NULL;
+		}
+		else if (list->current == list->tail) {
+			prev(list);
+			list->tail = list->current;
+			list->tail->next = NULL;
+			list->current->next = NULL;
+		}
+		else {
+			prev(list);
+			list->current->next = temp->next;
+		}
+		list->size--;
+	}
+	if (list->size == 0) {
+		list->empty = true;
+	}
+
+	return num;
+}
+/* END LLIST(USUARIO) */

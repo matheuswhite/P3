@@ -15,6 +15,7 @@ typedef struct userelement UNode;
 
 /* BEGIN USUARIO */
 Usuario* Usuario_new();
+void initUsuario(Usuario* user);
 /* END USUARIO */
 
 /* BEGIN ATIVIDADE */
@@ -30,14 +31,18 @@ void setMaterial(Atividade* ativ, char* materiais[]);
 /* END ATIVIDADE */
 
 /* BEGIN HORA */
+Hora* Hora_new();
 void setHora(Hora* hora, char* h);
 void setMinutos(Hora* min, char* m);
+void initHora(Hora* hora);
 /* END HORA */
 
 /* BEGIN DATAHORA */
+DataHora* DataHora_new();
 void setDia(DataHora* data, char* d);
 void setMes(DataHora* data, char* m);
 void setAno(DataHora* data, char* a);
+void initDataHora(DataHora* data);
 /* END DATAHORA */
 
 /* BEGIN RECURSO */
@@ -53,6 +58,8 @@ Atividade* getAtividade(Recurso* rec);
 /* END RECURSO */
 
 /* BEGIN LLIST(RECURSO) */
+Node* Node_new();
+void initNode();
 LList* LList_new();
 void msgError(const char* error);
 void initLList(LList* list);
@@ -64,5 +71,19 @@ void end(LList* list);
 void moveAt(int pos, LList* list);
 Recurso* removeR(LList* list);
 /* END LLIST(RECURSO) */
+
+/* BEGIN LLIST(USUARIO) */
+UNode* UNode_new();
+void initUNode();
+ULList* ULList_new();
+void initULList(ULList* list);
+void append(Usuario* it, ULList* list);
+void next(ULList* list);
+void prev(ULList* list);
+void begin(ULList* list);
+void end(ULList* list);
+void moveAt(int pos, ULList* list);
+Usuario* removeU(ULList* list);
+/* END LLIST(USUARIO) */
 
 #endif // RECURSOS_H

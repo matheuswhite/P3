@@ -6,22 +6,37 @@
 
 void alocar(LList* emProcesso, LList* alocado) {
 	Recurso* recurso = Recurso_new();
-	char* aux_s = "";
-	char* dia = "";
-	char* mes = "";
-	char* ano = "";
-	char* hora = "";
-	char* min = "";
+	char aux_s[256];
+	char dia[3];
+	char mes[3];
+	char ano[5];
+	char hora[3];
+	char min[3];
 
-	printf("Identificação do Recurso\n>> ");
-	scanf_s("%s", aux_s);
-	getchar();
+	printf("Identificação do Recurso (sem espaços)\n>> ");
+	fgets(aux_s, sizeof(aux_s), stdin);
 
 	setId(recurso, aux_s);
 
-	printf("Data e Hora início (dd/mm/aaaa 00:00)\n>> ");
-	scanf_s("%s/%s/%s %s:%s", dia, mes, ano,
-							 hora, min);
+	printf("Data e Hora início (dd/mm/aaaa 00:00)\n");
+	printf(">> Dia: ");
+	fgets(dia, sizeof(dia), stdin);
+	getchar();
+
+	printf(">> Mes: ");
+	fgets(mes, sizeof(mes), stdin);
+	getchar();
+
+	printf(">> Ano: ");
+	fgets(ano, sizeof(ano), stdin);
+	getchar();
+
+	printf(">> Hora: ");
+	fgets(hora, sizeof(hora), stdin);
+	getchar();
+
+	printf(">> Minutos: ");
+	fgets(min, sizeof(min), stdin);
 	getchar();
 
 	setDia(getInicio(recurso), dia);
@@ -30,9 +45,25 @@ void alocar(LList* emProcesso, LList* alocado) {
 	setHora(getHora(getInicio(recurso)), hora);
 	setMinutos(getHora(getInicio(recurso)), min);
 
-	printf("Data e Hora término (dd/mm/aaaa 00:00)\n>> ");
-	scanf_s("%s/%s/%s %s:%s", dia, mes, ano,
-							 hora, min);
+	printf("Data e Hora término (dd/mm/aaaa 00:00)\n");
+	printf(">> Dia: ");
+	fgets(dia, sizeof(dia), stdin);
+	getchar();
+
+	printf(">> Mes: ");
+	fgets(mes, sizeof(mes), stdin);
+	getchar();
+
+	printf(">> Ano: ");
+	fgets(ano, sizeof(ano), stdin);
+	getchar();
+
+	printf(">> Hora: ");
+	fgets(hora, sizeof(hora), stdin);
+	getchar();
+
+	printf(">> Minutos: ");
+	fgets(min, sizeof(min), stdin);
 	getchar();
 
 	setDia(getFim(recurso), dia);
@@ -42,8 +73,7 @@ void alocar(LList* emProcesso, LList* alocado) {
 	setMinutos(getHora(getFim(recurso)), min);
 
 	printf("Responsável\n>> ");
-	scanf_s("%s", &aux_s);
-	getchar();
+	fgets(aux_s, sizeof(aux_s), stdin);
 
 	setResponsavel(recurso, aux_s);
 
