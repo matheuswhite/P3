@@ -2,203 +2,64 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-
-typedef struct
-{
-	int hora;
-	int minutos;
-}Hora;
-
-typedef struct
-{
-	int dia;
-	int mes;
-	int ano;
-	Hora* hora;
-}DataHora;
-
-typedef struct
-{
-	char* titulo;
-	char** participantes;
-	char* info;
-	char** materialApoio;
-	char* tipo;
-}Atividade;
-
-typedef struct
-{
-	char* identificacao;
-	DataHora* inicio;
-	DataHora* fim;
-	char* responsavel;
-	char* status;
-	Atividade* atividade;
-}Recurso;
-
-/* Begin LList */
-
-struct element{
-	Recurso* val;
-	struct element* next;
-};
-
-typedef struct element Node;
-
-typedef struct {
-	int size;
-	bool empty;
-	Node* head;
-	Node* tail;
-	Node* current;
-} LList;
-
-void msgError(const char* error) {
-	printf("Error: %s \n", error);
-}
-
-void initLList(LList* list) {
-	list->empty = true;
-	list->size = 0;
-	list->head = NULL;
-	list->tail = NULL;
-	list->current = NULL;
-}
-
-void append(Recurso* it, LList* list) {	
-	Node* temp = (Node*)malloc(sizeof(Node));	
-	temp->val = it;
-	if(list->size == 0) {
-		temp->next = NULL;			
-		list->head = temp;
-	}
-	else {
-		list->current->next = temp;	
-	}
-	list->tail = temp;
-	list->current = temp;
-	list->size++;
-	list->empty = false;
-}
-
-void next(LList* list) {
-	if(list->current->next == NULL) {
-		msgError("Final da Lista!");
-	}
-	else {
-		Node* temp = list->current;
-		list->current = temp->next;
-	}
-}
-void prev(LList* list) {
-	if(list->current == list->head) {
-		msgError("Inicio da Lista!");
-	}
-	else {
-		Node* temp = list->current;
-		for(list->current = list->head; list->current->next != temp; next(list)) {} 
-	}
-	
-}
-void begin(LList* list) {
-	list->current = list->head;
-}
-void end(LList* list) {
-	list->current = list->tail;
-}
-void moveAt(int pos, LList* list) {
-	int i = 0;
-	if(pos < 1 || pos > list->size) {
-		msgError("Fora de alcance!");
-	}
-	else {
-		Node* temp = list->current;
-		for(list->current = list->head, i = 0; i < pos; next(list), i++) {}
-	}
-}
-
-Recurso* remove(LList* list) {
-	Recurso* num = (Recurso*)malloc(sizeof(Recurso));
-	
-	if(list->size == 0) {
-		msgError("Lista Vazia!");
-	}
-	else {
-		Node* temp = list->current;
-		num = temp->val;
-		if(list->current == list->head) {
-			temp = list->head;
-			list->head = temp->next;
-			list->current = list->head;
-			temp->next = NULL;
-		}
-		else if (list->current == list->tail) {
-			prev(list);
-			list->tail = list->current;
-			list->tail->next = NULL;
-			list->current->next = NULL;
-		}
-		else {
-			prev(list);
-			list->current->next = temp->next;
-		}
-		list->size--;
-	}
-	if(list->size == 0) {
-		list->empty = true;
-	}
-
-	return num;
-}
-
-/* End LList */
-
-typedef struct 
-{
-	char* nome;
-	char* email;
-	LList* historicoRecurso;
-	char* funcao;
-	short acesso;
-	bool emAndamento = false;
-} Usuario;
+#include "Recursos.h"
 
 void alocar(LList* emProcesso, LList* alocado) {
-	Recurso* recurso = (Recurso*)malloc(sizeof(Recurso));
+	Recurso* recurso = Recurso_new();
+	char* aux_s = "";
+	char* dia = "";
+	char* mes = "";
+	char* ano = "";
+	char* hora = "";
+	char* min = "";
 
 	printf("Identificação do Recurso\n>> ");
-	scanf("%s", &recurso->indentificacao);
+	scanf_s("%s", aux_s);
 	getchar();
+
+	setId(recurso, aux_s);
+
 	printf("Data e Hora início (dd/mm/aaaa 00:00)\n>> ");
-	scanf("%d/%d/%d %d:%d", &recurso->inicio->dia, &recurso->inicio->mes, &recurso->inicio->ano,
-							 &recurso->inicio->hora->hora, &recurso->inicio->hora->minutos);
+	scanf_s("%s/%s/%s %s:%s", dia, mes, ano,
+							 hora, min);
 	getchar();
+
+	setDia(getInicio(recurso), dia);
+	setMes(getInicio(recurso), mes);
+	setAno(getInicio(recurso), ano);
+	setHora(getHora(getInicio(recurso)), hora);
+	setMinutos(getHora(getInicio(recurso)), min);
+
 	printf("Data e Hora término (dd/mm/aaaa 00:00)\n>> ");
-	scanf("%d/%d/%d %d:%d", &recurso->fim->dia, &recurso->fim->mes, &recurso->fim->ano,
-							 &recurso->fim->hora->hora, &recurso->fim->hora->minutos);
+	scanf_s("%s/%s/%s %s:%s", dia, mes, ano,
+							 hora, min);
 	getchar();
+
+	setDia(getFim(recurso), dia);
+	setMes(getFim(recurso), mes);
+	setAno(getFim(recurso), ano);
+	setHora(getHora(getFim(recurso)), hora);
+	setMinutos(getHora(getFim(recurso)), min);
+
 	printf("Responsável\n>> ");
-	scanf("%s", &recurso->responsavel);
+	scanf_s("%s", &aux_s);
 	getchar();
+
+	setResponsavel(recurso, aux_s);
 
 	append(recurso, alocado);
 }
 
 void mostrarRecursos(Recurso* recurso) {
-	printf("Identificação: %s\n", recurso->indentificacao);
-	printf("Data e Hora de inicio: %d/%d/%d %d:%d\n", );
-	printf("Data e Hora de término: %d/%d/%d %d:%d\n", );
+	/*
+	printf("Identificação: %s\n", );
+	printf("Data e Hora de inicio: %s/%s/%s %s:%s\n", );
+	printf("Data e Hora de término: %s/%s/%s %s:%s\n", );
 	printf("Responsável: %s\n", );
 	printf("Status: %s\n", );
-
-	printf("ATIVIDADE\n");
-	printf("Título: \n");
-	printf("Descrição: \n");
-	printf("Tipo: \n");
-	//Resto das atividades
-
+	*/
 }
-
+/*
 void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
 	int entrada = 0;
 
@@ -226,13 +87,13 @@ void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
 			& Isso quer dizer que o usuario já possui um recurso em Andamento e não poderá pegar outro
 		$ Se passar o dia e a hora da alocação o recurso vai para o 'Lixo'
 	*/
-}
+//}*/
 
 void concluirAlocacoes(LList* emAndamento, LList* concluido) {
 
 }
 
-void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido, LList* usuario) {
+void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido /*, LList* usuario*/) {
 	int entrada = 0;
 	bool run = true;
 
@@ -241,7 +102,7 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 		printf("2- Confirmar alocações\n");
 		printf("3- Concluir alocações\n");
 		printf("4- Voltar\n>> ");
-		scanf("%d", &entrada);
+		scanf_s("%d", &entrada);
 		getchar();
 
 		switch(entrada) {
@@ -249,7 +110,7 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 				alocar(emProcesso, alocado);
 				break;
 			case 2:
-				verificarAlocacoes(alocado, emAndamento, usuario);
+				//verificarAlocacoes(alocado, emAndamento, usuario);
 				break;
 			case 3:
 				concluirAlocacoes(emAndamento, concluido);
@@ -279,28 +140,23 @@ void cadastrarUsuario() {
 bool menuPrincipal() {
 	bool run = true;
 	int entrada;
-	LList* emProcesso = (LList*)malloc(sizeof(LList));
-	LList* alocado = (LList*)malloc(sizeof(LList));
-	LList* emAndamento = (LList*)malloc(sizeof(LList));
-	LList* concluido = (LList*)malloc(sizeof(LList));
-	LList* usuario = (LList*)malloc(sizeof(LList));
+	LList* emProcesso = LList_new();
+	LList* alocado = LList_new();
+	LList* emAndamento = LList_new();
+	LList* concluido = LList_new();
 
-	initLList(emProcesso);
-	initLList(alocado);
-	initLList(emAndamento);
-	initLList(concluido);
-	initLList(usuario);
+	//ULList* usuario = ULList_new();
 
 	printf("1- Alocar um Recurso\n");
 	printf("2- Consulta\n");
 	printf("3- Relatórios\n");
 	printf("4- Cadastrar novo usuário\n");
 	printf("5- Sair\n>> ");
-	scanf("%d", &entrada);
+	scanf_s("%d", &entrada);
 
 	switch(entrada) {
 		case 1:
-			menuAlocar(emProcesso, alocado, emAndamento, concluido, usuario);
+			menuAlocar(emProcesso, alocado, emAndamento, concluido/*, usuario*/);
 			break;
 		case 2:
 			consulta();
@@ -323,27 +179,18 @@ bool menuPrincipal() {
 }
 
 int main(int argc, char** argv) {
-	char* user, password;
+	char* user = "";
+	char* password = "";
 	//Usuario* usuario = (Usuario*)malloc(sizeof(Usuario));
 	bool run = true;
 	bool runLogin = false;
 
-	/*
-	enum usuarios {graduacao, mestrado, doutorado, professores, pesquisadores, administrador};
-	enum recursoInfo {identificacao, inicio, termino, responsavel};
-	enum Responsavel {professores, pesquisadores, administrador};
-	enum status {"Em processo de alocação", "Alocado", "Em andamento", "Concluído"};
-	enum atividades {aula, apresentacoes, lab};
-	enum ativRestricao {professores, aula, lab};
-	enum ativInfo {titulo, descrisao, participantes, materialApoio};
-	*/
-
 	while(runLogin) {
 		printf("***LOGIN***\nUsuário:\n>> ");
-		scanf("%s", user);
+		scanf_s("%s", user);
 		getchar();
 		printf("Senha:\n>> ");
-		scanf("%s", password);
+		scanf_s("%s", password);
 		getchar();
 
 		/*Verificar o login*/
@@ -351,7 +198,7 @@ int main(int argc, char** argv) {
 		//if /*Se o login estiver correto*/ 
 		//	runLogin = false;
 		//else /*Se o login estiver errado*/
-		
+		//	msgError("lOGIN INCORRETO");
 	}
 	
 	while(run) {
