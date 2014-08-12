@@ -9,7 +9,7 @@
 #define AVANCADO 3
 #define TOTAL 4
 
-void alocar(LList* emProcesso, LList* alocado) {
+void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 	Recurso* recurso = Recurso_new();
 	char aux_s[256];
 	char dia[3];
@@ -47,8 +47,8 @@ void alocar(LList* emProcesso, LList* alocado) {
 	setDia(getInicio(recurso), dia);
 	setMes(getInicio(recurso), mes);
 	setAno(getInicio(recurso), ano);
-	setHora(getHora(getInicio(recurso)), hora);
-	setMinutos(getHora(getInicio(recurso)), min);
+	setHora(getHoraD(getInicio(recurso)), hora);
+	setMinutos(getHoraD(getInicio(recurso)), min);
 
 	printf("Data e Hora término (dd/mm/aaaa 00:00)\n");
 	printf(">> Dia: ");
@@ -74,54 +74,102 @@ void alocar(LList* emProcesso, LList* alocado) {
 	setDia(getFim(recurso), dia);
 	setMes(getFim(recurso), mes);
 	setAno(getFim(recurso), ano);
-	setHora(getHora(getFim(recurso)), hora);
-	setMinutos(getHora(getFim(recurso)), min);
+	setHora(getHoraD(getFim(recurso)), hora);
+	setMinutos(getHoraD(getFim(recurso)), min);
 
+	
 	printf("Responsável\n>> ");
 	fgets(aux_s, sizeof(aux_s), stdin);
 
+	if (!(findNome(usuarios, aux_s))) {
+		printf("Usuario não cadastrado!\n");
+		cadastrarUsuario(usuarios);
+	}
+
 	setResponsavel(recurso, aux_s);
 
-	append(recurso, alocado);
+	appendR(recurso, alocado);
 }
 
-void mostrarRecursos(Recurso* recurso) {
-	/*
-	printf("Identificação: %s\n", );
-	printf("Data e Hora de inicio: %s/%s/%s %s:%s\n", );
-	printf("Data e Hora de término: %s/%s/%s %s:%s\n", );
-	printf("Responsável: %s\n", );
-	printf("Status: %s\n", );
-	*/
+void mostrarRecursos(Recurso* rec) {
+	
+	printf("Identificação: %s\n", getId(rec));
+	printf("Data e Hora de inicio: %s/%s/%s %s:%s\n", getDia(getInicio(rec)), getMes(getInicio(rec)), getAno(getInicio(rec)), 
+													  getHora(getHoraD(getInicio(rec))), getHora(getHoraD(getInicio(rec))));
+	printf("Data e Hora de término: %s/%s/%s %s:%s\n", getDia(getFim(rec)), getMes(getFim(rec)), getAno(getFim(rec)),
+													   getHora(getHoraD(getFim(rec))), getHora(getHoraD(getFim(rec))));
+	printf("Responsável: %s\n", getResponsavel(rec));
+	printf("Status: %s\n", getStatus(rec));
 }
 
-void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
+void verificarAlocacoes(LList* alocado, LList* emAndamento, ULList* usuario) {
 	int entrada = 0;
+	char* aux_s;
+	char* responsavel;
+	bool run = false;
+	bool runChoice = false;
+	Recurso* rec = Recurso_new();
+	Usuario* user = Usuario_new();
 
 	printf("Alocações pendentes que precisão da sua atenção!\n");
 	printf("\n");
 
-	begin(alocado);
-	for(int i = 0; i < getSize(alocado); i++) {
-		printf("%d- %s\n", i, alocado->current->val->identificacao);
-		next(alocado);
+	beginR(alocado);
+	for(int i = 0; i < getSizeR(alocado); i++) {
+		printf("%d- %s\n", i, getId(getCurrentR(alocado)));
+		nextR(alocado);
 	}
 	printf(">> ");
 
 	scanf("%d", &entrada);
 	getchar();
 
-	moveAt(entrada, alocado);
+	moveAtR(entrada, alocado);
 
-	mostrarRecursos(alocado->current);
-	/*  $ Procurar recursos na lista 'alocado' como responsável este usuário
-		$ Dar a opção de confirmar alocação, se o membro 'emAndamento' estiver false
-		$ Quando confirmada:
-			& Tirar o recurso da lista 'alocado' e colocar na lista 'emAndamento'
-			& Colocar o membro emAndamento do usuario como 'true'
-			& Isso quer dizer que o usuario já possui um recurso em Andamento e não poderá pegar outro
-		$ Se passar o dia e a hora da alocação o recurso vai para o 'Lixo'
-	*/
+	mostrarRecursos(getCurrentR(alocado));
+
+	while (run) {
+		printf("Escolha um recurso pelo nome\n>> ");
+		fgets(aux_s, sizeof(aux_s), stdin);
+
+		if (find(alocado, aux_s)) {
+			while (runChoice) {
+				printf("Confimar esta alocação?\n1- Sim\t2- Não\n>> ");
+				scanf("%d", &entrada);
+				if (entrada == 1) {
+					rec = removeR(alocado);
+					responsavel = getResponsavel(rec);
+					if (findNome(usuario, responsavel)) {
+						user = getCurrentU(usuario);
+						if (!(isEmAndamento(user))) {
+							setEmAndamento(user);
+						}
+						else {
+							msgError("Este responsável já possui um recurso em andamento no seu nome!");
+						}
+					}
+					else {
+						msgError("Responsavel não encontrado. Erro de Alocação!");
+						return ;
+					}
+					appendR(rec, emAndamento);
+					runChoice = false;
+				}
+				else if (entrada == 2) {
+					runChoice = false;
+				}
+				else {
+					msgError("Comando incorreto!");
+					runChoice = true;
+				}
+			}
+			
+			run = false;
+		}
+		else {
+			run = true;
+		}
+	}
 }
 
 void concluirAlocacoes(LList* emAndamento, LList* concluido) {
@@ -142,7 +190,7 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 
 		switch(entrada) {
 			case 1:
-				alocar(emProcesso, alocado);
+				alocar(emProcesso, alocado, usuario);
 				break;
 			case 2:
 				verificarAlocacoes(alocado, emAndamento, usuario);
@@ -172,6 +220,7 @@ void cadastrarUsuario(ULList* list) {
 	int entrada;
 	char* aux_s;
 	Usuario* user = Usuario_new();
+	bool run = false;
 	
 	printf("Usuários existentes:\n");
 	
@@ -179,8 +228,8 @@ void cadastrarUsuario(ULList* list) {
 		printf("Sem usuários cadastrados");
 	}
 	else {
-		begin(user);
-		for (size_t i = 0; i < getSize(list); i++)
+		begin(list);
+		for (int i = 0; i < getSize(list); i++)
 		{
 			user = getVal(list);
 			printf("%d- %s\n", i, getNome(user));
@@ -190,25 +239,43 @@ void cadastrarUsuario(ULList* list) {
 	}
 
 	user = NULL;
-	/*void setNome(Usuario* user, char* nome);
-void setemail(Usuario* user, char* email);
-void setFuncao(Usuario* user, char* func);
-void setAcesso(Usuario* user, int acess);*/
 
-	printf("Nome do Usuário\n>> ");
-	fgets(aux_s, sizeof(aux_s), stdin);
-	getchar();
+	while (run)
+	{
+		printf("Nome do Usuário\n>> ");
+		fgets(aux_s, sizeof(aux_s), stdin);
+		getchar();
 
+		if (findNome(list, aux_s)) {
+			run = true;
+			msgError("Nome já existente");
+		}
+		else {
+			run = false;
+		}
+	}
+	
 	setNome(user, aux_s);
 
-	printf("E-mail\n>> ");
-	fgets(aux_s, sizeof(aux_s), stdin);
-	getchar();
+	while (run)
+	{
+		printf("E-mail\n>> ");
+		fgets(aux_s, sizeof(aux_s), stdin);
+		getchar();
 
-	setemail(user, aux_s);
+		if (findEmail(list, aux_s)) {
+			run = true;
+			msgError("Email já existente");
+		}
+		else {
+			run = false;
+		}
+	}
+
+	setEmail(user, aux_s);
 
 	printf("Função do Usuário\n1- Aluno de Graduação\t4- Professor\n2- Aluno de Mestrado\t5- Pesquisador\n3- Aluno de Doutorado\t6- Administrador\n>> ");
-	sscanf("%d", &entrada);
+	scanf("%d", &entrada);
 	getchar();
 
 	switch (entrada)

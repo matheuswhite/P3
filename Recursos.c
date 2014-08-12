@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 
 #define ROWS 30
 #define STRING_SIZE 256
@@ -47,7 +48,7 @@ void init_Atividade(Atividade* ativ) {
 }
 
 void setTitulo(Atividade* ativ, char* titulo) {
-	ativ->titulo = ativ;
+	ativ->titulo = titulo;
 }
 
 void setInfo(Atividade* ativ, char* info) {
@@ -105,6 +106,15 @@ void initHora(Hora* hora) {
 	hora->hora = "00";
 	hora->minutos = "00";
 }
+
+char* getHora(Hora* hora) {
+	return hora->hora;
+}
+
+char* getMinuto(Hora* hora) {
+	return hora->minutos;
+}
+
 /* END HORA */
 
 /* BEGIN DATAHORA */
@@ -143,6 +153,19 @@ void initDataHora(DataHora* data) {
 	data->mes = "00";
 	data->ano = "0000";
 }
+
+char* getDia(DataHora* data) {
+	return data->dia;
+}
+
+char* getMes(DataHora* data) {
+	return data->mes;
+}
+
+char* getAno(DataHora* data) {
+	return data->ano;
+}
+
 /* END DATAHORA */
 
 /* BEGIN RECURSOS */
@@ -188,7 +211,7 @@ void setStatus(Recurso* rec, char* stats) {
 	rec->status = stats;
 }
 
-Hora* getHora(DataHora* data) {
+Hora* getHoraD(DataHora* data) {
 	return data->hora;
 }
 
@@ -203,6 +226,19 @@ DataHora* getFim(Recurso* rec) {
 Atividade* getAtividade(Recurso* rec) {
 	return rec->atividade;
 }
+
+char* getId(Recurso* rec) {
+	return rec->identificacao;
+}
+
+char* getResponsavel(Recurso* rec) {
+	return rec->responsavel;
+}
+
+char* getStatus(Recurso* rec) {
+	return rec->status;
+}
+
 /* END RECURSOS */
 
 /* BEGIN USUARIO */
@@ -242,7 +278,7 @@ void setNome(Usuario* user, char* nome) {
 	user->nome = nome;
 }
 
-void setemail(Usuario* user, char* email) {
+void setEmail(Usuario* user, char* email) {
 	user->email = email;
 }
 
@@ -252,6 +288,14 @@ void setFuncao(Usuario* user, char* func) {
 
 void setAcesso(Usuario* user, int acess) {
 	user->acesso = acess;
+}
+
+void setEmAndamento(Usuario* user) {
+	user->emAndamento = true;
+}
+
+bool isEmAndamento(Usuario* user) {
+	return user->emAndamento;
 }
 /* END USUARIO */
 
@@ -298,7 +342,7 @@ void initLList(LList* list) {
 	list->current = NULL;
 }
 
-void append(Recurso* it, LList* list) {
+void appendR(Recurso* it, LList* list) {
 	Node* temp = Node_new();
 	temp->val = it;
 	if (list->size == 0) {
@@ -314,7 +358,7 @@ void append(Recurso* it, LList* list) {
 	list->empty = false;
 }
 
-void next(LList* list) {
+void nextR(LList* list) {
 	if (list->current->next == NULL) {
 		msgError("Final da Lista!");
 	}
@@ -324,33 +368,33 @@ void next(LList* list) {
 	}
 }
 
-void prev(LList* list) {
+void prevR(LList* list) {
 	if (list->current == list->head) {
 		msgError("Inicio da Lista!");
 	}
 	else {
 		Node* temp = list->current;
-		for (list->current = list->head; list->current->next != temp; next(list)) {}
+		for (list->current = list->head; list->current->next != temp; nextR(list)) {}
 	}
 
 }
 
-void begin(LList* list) {
+void beginR(LList* list) {
 	list->current = list->head;
 }
 
-void end(LList* list) {
+void endR(LList* list) {
 	list->current = list->tail;
 }
 
-void moveAt(int pos, LList* list) {
+void moveAtR(int pos, LList* list) {
 	int i = 0;
 	if (pos < 1 || pos > list->size) {
 		msgError("Fora de alcance!");
 	}
 	else {
 		Node* temp = list->current;
-		for (list->current = list->head, i = 0; i < pos; next(list), i++) {}
+		for (list->current = list->head, i = 0; i < pos; nextR(list), i++) {}
 	}
 }
 
@@ -370,13 +414,13 @@ Recurso* removeR(LList* list) {
 			temp->next = NULL;
 		}
 		else if (list->current == list->tail) {
-			prev(list);
+			prevR(list);
 			list->tail = list->current;
 			list->tail->next = NULL;
 			list->current->next = NULL;
 		}
 		else {
-			prev(list);
+			prevR(list);
 			list->current->next = temp->next;
 		}
 		list->size--;
@@ -388,24 +432,25 @@ Recurso* removeR(LList* list) {
 	return num;
 }
 
-int getSize(LList* list) {
+int getSizeR(LList* list) {
 	return list->size;
 }
 
 bool find(LList* list, char* id) {
-	bool saida = false;
-	
-	begin(list);
-	for (size_t i = 0; i < getSize(list); i++)
+	beginR(list);
+	for (int i = 0; i < getSizeR(list); i++)
 	{
 		if (strcmp(list->current->val->identificacao, id) == 0) {
-			saida = true;
-			i = getSize(list) + 1;
+			return true;
 		}
-		next(list);
+		nextR(list);
 	}
 
-	return saida;
+	return false;
+}
+
+Recurso* getCurrentR(LList* list) {
+	return list->current->val;
 }
 /* END LLIST(RECURSO) */
 
@@ -434,7 +479,7 @@ void initUNode(UNode* user) {
 	user->next = NULL;
 }
 
-ULList* LList_new() {
+ULList* ULList_new() {
 	ULList* list = malloc(sizeof(ULList));
 	initULList(list);
 	return list;
@@ -550,7 +595,7 @@ bool findNome(ULList* list, char* name) {
 	bool saida = false;
 
 	begin(list);
-	for (size_t i = 0; i < getSize(list); i++)
+	for (int i = 0; i < getSize(list); i++)
 	{
 		if (strcmp(list->current->val->nome, name) == 0) {
 			saida = true;
@@ -566,7 +611,7 @@ bool findEmail(ULList* list, char* email) {
 	bool saida = false;
 
 	begin(list);
-	for (size_t i = 0; i < getSize(list); i++)
+	for (int i = 0; i < getSize(list); i++)
 	{
 		if (strcmp(list->current->val->email, email) == 0) {
 			saida = true;
@@ -582,7 +627,7 @@ bool findFuncao(ULList* list, char* func) {
 	bool saida = false;
 
 	begin(list);
-	for (size_t i = 0; i < getSize(list); i++)
+	for (int i = 0; i < getSize(list); i++)
 	{
 		if (strcmp(list->current->val->funcao, func) == 0) {
 			saida = true;
@@ -594,4 +639,7 @@ bool findFuncao(ULList* list, char* func) {
 	return saida;
 }
 
+Usuario* getCurrentU(ULList* list) {
+	return list->current->val;
+}
 /* END LLIST(USUARIO) */
