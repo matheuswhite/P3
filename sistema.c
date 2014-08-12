@@ -2,12 +2,129 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "Recursos.h"
 
 #define BASICO 1
 #define INTERMEDIARIO 2
 #define AVANCADO 3
 #define TOTAL 4
+
+/**********************************************/
+/***********Linked*List*Usuarios***************/
+/**********************************************/
+
+struct userelement{
+	Usuario* val;
+	struct userelement* next;
+};
+
+typedef struct userelement UNode;
+
+typedef struct {
+	int size;
+	bool empty;
+	UNode* head;
+	UNode* tail;
+	UNode* current;
+}ULList;
+
+UNode* UNode_new();
+void initUNode();
+ULList* ULList_new();
+void initULList(ULList* list);
+void append(Usuario* it, ULList* list);
+void next(ULList* list);
+void prev(ULList* list);
+void begin(ULList* list);
+void end(ULList* list);
+void moveAt(int pos, ULList* list);
+Usuario* removeU(ULList* list);
+bool findU(ULList* list, char* id);
+
+
+/**********************************************/
+/***********Linked*List*Usuarios***************/
+/**********************************************/
+
+/**********************************************/
+/***********Linked*List*Recursos***************/
+/**********************************************/
+
+struct element{
+	Recurso* val;
+	struct element* next;
+};
+
+typedef struct element Node;
+
+typedef struct{
+	int size;
+	bool empty;
+	Node* head;
+	Node* tail;
+	Node* current;
+}LList;
+
+Node* Node_new();
+void initNode();
+LList* LList_new();
+
+void initLList(LList* list);
+void appendR(Recurso* it, LList* list);
+void nextR(LList* list);
+void prevR(LList* list);
+void beginR(LList* list);
+void endR(LList* list);
+void moveAtR(int pos, LList* list);
+Recurso* removeR(LList* list);
+bool findR(LList* list, char* id);
+
+/**********************************************/
+/***********Linked*List*Recursos***************/
+/**********************************************/
+
+/**********************************************/
+/*******************Structs********************/
+/**********************************************/
+
+typedef struct {
+	char* hora;
+	char* minutos;
+}Hora;
+
+typedef struct {
+	char* dia;
+	char* mes;
+	char* ano;
+	Hora* hora;
+}DataHora;
+
+typedef struct {
+	char* nome;
+	char* email;
+	LList* historicoRecurso;
+	char* funcao;
+	int acesso;
+	bool emAndamento;
+}Usuario;
+
+typedef struct {
+	char* identificacao;
+	char** participantes;
+	char** materialApoio;
+	char* tipo
+	DataHora* inicio;
+	DataHora* fim;
+	Usuario* responsavel;
+	char* status;
+}Recurso;
+
+/**********************************************/
+/*******************Structs********************/
+/**********************************************/
+
+void msgError(const char* error) {
+    printf("Error: %s \n", error);
+}
 
 void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 	Recurso* recurso = Recurso_new();
@@ -21,7 +138,7 @@ void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 	printf("Identificação do Recurso (sem espaços)\n>> ");
 	fgets(aux_s, sizeof(aux_s), stdin);
 
-	setId(recurso, aux_s);
+	recurso->identificacao = aux_s;
 
 	printf("Data e Hora início (dd/mm/aaaa 00:00)\n");
 	printf(">> Dia: ");
@@ -44,11 +161,12 @@ void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 	fgets(min, sizeof(min), stdin);
 	getchar();
 
-	setDia(getInicio(recurso), dia);
-	setMes(getInicio(recurso), mes);
-	setAno(getInicio(recurso), ano);
-	setHora(getHoraD(getInicio(recurso)), hora);
-	setMinutos(getHoraD(getInicio(recurso)), min);
+
+    recurso->inicio->dia = dia;
+    recurso->inicio->mes = mes;
+    recurso->inicio->ano = ano;
+    recurso->inicio->hora->hora = hora;
+    recurso->inicio->hora->minuto = min;
 
 	printf("Data e Hora término (dd/mm/aaaa 00:00)\n");
 	printf(">> Dia: ");
@@ -71,22 +189,23 @@ void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 	fgets(min, sizeof(min), stdin);
 	getchar();
 
-	setDia(getFim(recurso), dia);
-	setMes(getFim(recurso), mes);
-	setAno(getFim(recurso), ano);
-	setHora(getHoraD(getFim(recurso)), hora);
-	setMinutos(getHoraD(getFim(recurso)), min);
+	recurso->fim->dia = dia;
+    recurso->fim->mes = mes;
+    recurso->fim->ano = ano;
+    recurso->fim->hora->hora = hora;
+    recurso->fim->hora->minuto = min;
 
 	
 	printf("Responsável\n>> ");
 	fgets(aux_s, sizeof(aux_s), stdin);
 
-	if (!(findNome(usuarios, aux_s))) {
+	if (!(findU(usuarios, aux_s))) {
 		printf("Usuario não cadastrado!\n");
 		cadastrarUsuario(usuarios);
 	}
 
-	setResponsavel(recurso, aux_s);
+    //fazer
+    recurso->responsavel = usuarios->current
 
 	appendR(recurso, alocado);
 }
@@ -128,52 +247,77 @@ void verificarAlocacoes(LList* alocado, LList* emAndamento, ULList* usuario) {
 
 	mostrarRecursos(getCurrentR(alocado));
 
-	while (run) {
-		printf("Escolha um recurso pelo nome\n>> ");
-		fgets(aux_s, sizeof(aux_s), stdin);
-
-		if (find(alocado, aux_s)) {
-			while (runChoice) {
-				printf("Confimar esta alocação?\n1- Sim\t2- Não\n>> ");
-				scanf("%d", &entrada);
-				if (entrada == 1) {
-					rec = removeR(alocado);
-					responsavel = getResponsavel(rec);
-					if (findNome(usuario, responsavel)) {
-						user = getCurrentU(usuario);
-						if (!(isEmAndamento(user))) {
-							setEmAndamento(user);
-						}
-						else {
-							msgError("Este responsável já possui um recurso em andamento no seu nome!");
-						}
-					}
-					else {
-						msgError("Responsavel não encontrado. Erro de Alocação!");
-						return ;
-					}
-					appendR(rec, emAndamento);
-					runChoice = false;
-				}
-				else if (entrada == 2) {
-					runChoice = false;
+	
+	while (runChoice) {
+		printf("Confimar esta alocação?\n1- Sim\t2- Não\n>> ");
+		scanf("%d", &entrada);
+		if (entrada == 1) {
+			rec = removeR(alocado);
+			responsavel = getResponsavel(rec);
+			if (findNome(usuario, responsavel)) {
+				user = getCurrentU(usuario);
+				if (!(isEmAndamento(user))) {
+					setEmAndamento(user);
 				}
 				else {
-					msgError("Comando incorreto!");
-					runChoice = true;
+					msgError("Este responsável já possui um recurso em andamento no seu nome!");
 				}
 			}
-			
-			run = false;
+			else {
+				msgError("Responsavel não encontrado. Erro de Alocação!");
+				return ;
+			}
+		    appendR(rec, emAndamento);
+   			runChoice = false;
+		}
+		else if (entrada == 2) {
+			runChoice = false;
 		}
 		else {
-			run = true;
+			msgError("Comando incorreto!");
+			runChoice = true;
 		}
 	}
 }
 
-void concluirAlocacoes(LList* emAndamento, LList* concluido) {
+void concluirAlocacoes(LList* emAndamento, LList* concluido, ULList* usuarios) {
+    int entrada = 0;
+    char* aux_s;
+    Atividade* ativ = Atividade_new(); 
+    
+    printf("Escolha um recurso:\n\n");
+    
+    beginR(emAndamento);
+	for(int i = 0; i < getSizeR(emAndamento); i++) {
+		printf("%d- %s\n", i, getId(getCurrentR(emAndamento)));
+		nextR(emAndamento);
+	}
+	printf(">> ");
+	
+	scanf("%d", &entrada);
+	getchar();
 
+	moveAtR(entrada, emAndamento);
+
+	mostrarRecursos(getCurrentR(emAndamento));
+
+    /*char* titulo;
+	char** participantes;
+	char* info;
+	char** materialApoio;
+	int numMaterial;
+	int numParticipantes;
+	char* tipo;*/
+
+    printf("Cadastrar atividade\n");
+    printf("Titulo\n>> ");
+    fgets(aux_s*, sizeof(aux_s), stdin);
+    
+    printf("Descricao\n>> ");
+    fgets(aux_s, sizeof(aux_s), stdin);
+    
+    printf("Tipo da atividade\n>> ");
+    fgets();
 }
 
 void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido , ULList* usuario) {
@@ -196,7 +340,7 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 				verificarAlocacoes(alocado, emAndamento, usuario);
 				break;
 			case 3:
-				concluirAlocacoes(emAndamento, concluido);
+				concluirAlocacoes(emAndamento, concluido, usuario);
 				break;
 			case 4:
 				run = false;
@@ -381,3 +525,4 @@ int main(int argc, char** argv) {
 
 	return 0;
 }
+
