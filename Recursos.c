@@ -391,6 +391,22 @@ Recurso* removeR(LList* list) {
 int getSize(LList* list) {
 	return list->size;
 }
+
+bool find(LList* list, char* id) {
+	bool saida = false;
+	
+	begin(list);
+	for (size_t i = 0; i < getSize(list); i++)
+	{
+		if (strcmp(list->current->val->identificacao, id) == 0) {
+			saida = true;
+			i = getSize(list) + 1;
+		}
+		next(list);
+	}
+
+	return saida;
+}
 /* END LLIST(RECURSO) */
 
 /* BEGIN LLIST(USUARIO) */
@@ -529,4 +545,53 @@ int getSize(ULList* list) {
 Usuario* getVAL(ULList* list) {
 	return list->current->val;
 }
+
+bool findNome(ULList* list, char* name) {
+	bool saida = false;
+
+	begin(list);
+	for (size_t i = 0; i < getSize(list); i++)
+	{
+		if (strcmp(list->current->val->nome, name) == 0) {
+			saida = true;
+			i = getSize(list) + 1;
+		}
+		next(list);
+	}
+
+	return saida;
+}
+
+bool findEmail(ULList* list, char* email) {
+	bool saida = false;
+
+	begin(list);
+	for (size_t i = 0; i < getSize(list); i++)
+	{
+		if (strcmp(list->current->val->email, email) == 0) {
+			saida = true;
+			i = getSize(list) + 1;
+		}
+		next(list);
+	}
+
+	return saida;
+}
+
+bool findFuncao(ULList* list, char* func) {
+	bool saida = false;
+
+	begin(list);
+	for (size_t i = 0; i < getSize(list); i++)
+	{
+		if (strcmp(list->current->val->funcao, func) == 0) {
+			saida = true;
+			i = getSize(list) + 1;
+		}
+		next(list);
+	}
+
+	return saida;
+}
+
 /* END LLIST(USUARIO) */

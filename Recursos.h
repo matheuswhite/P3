@@ -1,6 +1,8 @@
 #ifndef RECURSOS_H
 #define RECURSOS_H
 
+#include <stdbool.h>
+
 /* BEGIN STRUCTS */
 typedef struct hora Hora;
 typedef struct datahora DataHora;
@@ -76,6 +78,7 @@ void end(LList* list);
 void moveAt(int pos, LList* list);
 Recurso* removeR(LList* list);
 int getSize(LList* list);
+bool find(LList list, char* id);
 /* END LLIST(RECURSO) */
 
 /* BEGIN LLIST(USUARIO) */
@@ -92,6 +95,9 @@ void moveAt(int pos, ULList* list);
 Usuario* removeU(ULList* list);
 int getsize(ULList* list);
 Usuario* getVal(ULList* list);
+bool findNome(ULList* list, char* name);
+bool findEmail(ULList* list, char* email);
+bool findFuncao(ULList* list, char* func);
 /* END LLIST(USUARIO) */
 
 #endif // RECURSOS_H
