@@ -16,6 +16,11 @@ typedef struct userelement UNode;
 /* BEGIN USUARIO */
 Usuario* Usuario_new();
 void initUsuario(Usuario* user);
+char* getNome(Usuario* user);
+void setNome(Usuario* user, char* nome);
+void setemail(Usuario* user, char* email);
+void setFuncao(Usuario* user, char* func);
+void setAcesso(Usuario* user, int acess);
 /* END USUARIO */
 
 /* BEGIN ATIVIDADE */
@@ -70,6 +75,7 @@ void begin(LList* list);
 void end(LList* list);
 void moveAt(int pos, LList* list);
 Recurso* removeR(LList* list);
+int getSize(LList* list);
 /* END LLIST(RECURSO) */
 
 /* BEGIN LLIST(USUARIO) */
@@ -84,6 +90,8 @@ void begin(ULList* list);
 void end(ULList* list);
 void moveAt(int pos, ULList* list);
 Usuario* removeU(ULList* list);
+int getsize(ULList* list);
+Usuario* getVal(ULList* list);
 /* END LLIST(USUARIO) */
 
 #endif // RECURSOS_H

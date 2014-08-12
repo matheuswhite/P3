@@ -221,6 +221,10 @@ Usuario* Usuario_new() {
 	return user;
 }
 
+char* getNome(Usuario* user) {
+	return user->nome;
+}
+
 void initUsuario(Usuario* user) {
 	user->nome = (char*)malloc(STRING_SIZE * sizeof(char));
 	user->email = (char*)malloc(STRING_SIZE * sizeof(char));
@@ -232,6 +236,22 @@ void initUsuario(Usuario* user) {
 	user->funcao = "Vazio";
 	user->email = "Vazio";
 	user->nome = "Vazio";
+}
+
+void setNome(Usuario* user, char* nome) {
+	user->nome = nome;
+}
+
+void setemail(Usuario* user, char* email) {
+	user->email = email;
+}
+
+void setFuncao(Usuario* user, char* func) {
+	user->funcao = func;
+}
+
+void setAcesso(Usuario* user, int acess) {
+	user->acesso = acess;
 }
 /* END USUARIO */
 
@@ -254,11 +274,14 @@ void msgError(const char* error) {
 }
 
 Node* Node_new() {
-
+	Node* rec = (Node*)malloc(sizeof(Node));
+	initNode(rec);
+	return rec;
 }
 
-void initNode() {
-
+void initNode(Node* rec) {
+	rec->val = Recurso_new();
+	rec->next = NULL;
 }
 
 LList* LList_new() {
@@ -364,6 +387,10 @@ Recurso* removeR(LList* list) {
 
 	return num;
 }
+
+int getSize(LList* list) {
+	return list->size;
+}
 /* END LLIST(RECURSO) */
 
 /* BEGIN LLIST(USUARIO) */
@@ -386,8 +413,9 @@ UNode* UNode_new() {
 	return user;
 }
 
-void initUNode() {
-
+void initUNode(UNode* user) {
+	user->val = Usuario_new();
+	user->next = NULL;
 }
 
 ULList* LList_new() {
@@ -492,5 +520,13 @@ Usuario* removeU(ULList* list) {
 	}
 
 	return num;
+}
+
+int getSize(ULList* list) {
+	return list->size;
+}
+
+Usuario* getVAL(ULList* list) {
+	return list->current->val;
 }
 /* END LLIST(USUARIO) */

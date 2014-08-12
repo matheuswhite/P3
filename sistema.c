@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include "Recursos.h"
 
+#define BASICO 1
+#define INTERMEDIARIO 2
+#define AVANCADO 3
+#define TOTAL 4
+
 void alocar(LList* emProcesso, LList* alocado) {
 	Recurso* recurso = Recurso_new();
 	char aux_s[256];
@@ -89,7 +94,7 @@ void mostrarRecursos(Recurso* recurso) {
 	printf("Status: %s\n", );
 	*/
 }
-/*
+
 void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
 	int entrada = 0;
 
@@ -97,7 +102,7 @@ void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
 	printf("\n");
 
 	begin(alocado);
-	for(int i = 0; i < alocado->size; i++) {
+	for(int i = 0; i < getSize(alocado); i++) {
 		printf("%d- %s\n", i, alocado->current->val->identificacao);
 		next(alocado);
 	}
@@ -117,13 +122,13 @@ void verificarAlocacoes(LList* alocado, LList* emAndamento, LList* usuario) {
 			& Isso quer dizer que o usuario já possui um recurso em Andamento e não poderá pegar outro
 		$ Se passar o dia e a hora da alocação o recurso vai para o 'Lixo'
 	*/
-//}*/
+}
 
 void concluirAlocacoes(LList* emAndamento, LList* concluido) {
 
 }
 
-void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido /*, LList* usuario*/) {
+void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido , ULList* usuario) {
 	int entrada = 0;
 	bool run = true;
 
@@ -140,7 +145,7 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 				alocar(emProcesso, alocado);
 				break;
 			case 2:
-				//verificarAlocacoes(alocado, emAndamento, usuario);
+				verificarAlocacoes(alocado, emAndamento, usuario);
 				break;
 			case 3:
 				concluirAlocacoes(emAndamento, concluido);
@@ -163,8 +168,80 @@ void relatorios() {
 
 }
 
-void cadastrarUsuario() {
+void cadastrarUsuario(ULList* list) {
+	int entrada;
+	char* aux_s;
+	Usuario* user = Usuario_new();
+	
+	printf("Usuários existentes:\n");
+	
+	if (getSize(list) == 0) {
+		printf("Sem usuários cadastrados");
+	}
+	else {
+		begin(user);
+		for (size_t i = 0; i < getSize(list); i++)
+		{
+			user = getVal(list);
+			printf("%d- %s\n", i, getNome(user));
+			next(list);
+		}
+		printf("\n");
+	}
 
+	user = NULL;
+	/*void setNome(Usuario* user, char* nome);
+void setemail(Usuario* user, char* email);
+void setFuncao(Usuario* user, char* func);
+void setAcesso(Usuario* user, int acess);*/
+
+	printf("Nome do Usuário\n>> ");
+	fgets(aux_s, sizeof(aux_s), stdin);
+	getchar();
+
+	setNome(user, aux_s);
+
+	printf("E-mail\n>> ");
+	fgets(aux_s, sizeof(aux_s), stdin);
+	getchar();
+
+	setemail(user, aux_s);
+
+	printf("Função do Usuário\n1- Aluno de Graduação\t4- Professor\n2- Aluno de Mestrado\t5- Pesquisador\n3- Aluno de Doutorado\t6- Administrador\n>> ");
+	sscanf("%d", &entrada);
+	getchar();
+
+	switch (entrada)
+	{
+	case 1:
+		setFuncao(user, "Aluno de Graduação");
+		setAcesso(user, BASICO);
+		break;
+	case 2:
+		setFuncao(user, "Aluno de Mestrado");
+		setAcesso(user, BASICO);
+		break;
+	case 3:
+		setFuncao(user, "Aluno de Doutorado");
+		setAcesso(user, BASICO);
+		break;
+	case 4:
+		setFuncao(user, "Professor");
+		setAcesso(user, AVANCADO);
+		break;
+	case 5:
+		setFuncao(user, "Pesquisador");
+		setAcesso(user, INTERMEDIARIO);
+		break;
+	case 6:
+		setFuncao(user, "Administrador");
+		setAcesso(user, TOTAL);
+		break;
+	default:
+		break;
+	}
+
+	append(user, list);
 }
 
 bool menuPrincipal() {
@@ -175,7 +252,7 @@ bool menuPrincipal() {
 	LList* emAndamento = LList_new();
 	LList* concluido = LList_new();
 
-	//ULList* usuario = ULList_new();
+	ULList* usuario = ULList_new();
 
 	printf("1- Alocar um Recurso\n");
 	printf("2- Consulta\n");
@@ -186,7 +263,7 @@ bool menuPrincipal() {
 
 	switch(entrada) {
 		case 1:
-			menuAlocar(emProcesso, alocado, emAndamento, concluido/*, usuario*/);
+			menuAlocar(emProcesso, alocado, emAndamento, concluido, usuario);
 			break;
 		case 2:
 			consulta();
@@ -195,7 +272,7 @@ bool menuPrincipal() {
 			relatorios();
 			break;
 		case 4:
-			cadastrarUsuario();
+			cadastrarUsuario(usuario);
 			break;
 		case 5:
 			run = false;
