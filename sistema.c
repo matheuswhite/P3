@@ -593,7 +593,18 @@ void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 }
 
 void mostrarRecursos(Recurso* rec) {
-
+	/*char* identificacao; v
+    char** participantes;
+    char** materialApoio;
+    char* tipo;
+    DataHora* inicio; v
+    DataHora* fim; v
+    Usuario* responsavel; v
+    char* status; v
+    char* tituloAtiv; v
+    char* descricao; v*/
+	
+	int i;
     printf("Identificação: %s\n", rec->identificacao);
     printf("Data e Hora de inicio: %s/%s/%s %s:%s\n", rec->inicio->dia, rec->inicio->mes, rec->inicio->ano,
            rec->inicio->hora->hora, rec->inicio->hora->minutos);
@@ -601,6 +612,25 @@ void mostrarRecursos(Recurso* rec) {
            rec->fim->hora->hora, rec->fim->hora->minutos);
     printf("Responsável: %s\n", rec->responsavel);
     printf("Status: %s\n", rec->responsavel);
+	printf("Titulo da Atividade: %s\n", rec->tituloAtiv);
+	printf("Descricao: %s\n", rec->descricao);
+	printf("Tipo de Atividade: %s\n", rec->tipo);
+	
+	printf("Participantes\n");
+	for(i = 0; i < 30; i++) {
+		printf("%d- %s\n", i, rec->participantes[i]);
+	}
+	
+	printf("Materiais de apoio\n");
+	for(i = 0; i < 30; i++) {
+		printf("%d- %s\n", i, rec->materialApoio[i]);
+	}
+}
+
+void mostrarUsuario(Usuario* user) {
+	printf("Nome: %s\n", user->nome);
+    printf("Email: %s\n", user->email);
+    printf("Função: %s\n", user->funcao);
 }
 
 void verificarAlocacoes(LList* alocado, LList* emAndamento, ULList* usuario) {
@@ -802,11 +832,85 @@ void menuAlocar(LList* emProcesso, LList* alocado, LList* emAndamento, LList* co
 
 }
 
-void consulta() {
+void consulta(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido , ULList* usuario) {
+	int entrada = 0;
+	Recurso* rec = Recurso_new();
+	Usuario* user = Usuario_new();
+	
+	printf("Consulta:\n1- Por usuario\t2- Por recurso");
+	scanf("%d", &entrada);
+	getchar();
+	
+	if(entrada == 1) {
+		begin(usuario);
+		int i;
+		for(i = 0; i < usuario->size; i++) {
+			printf("%d- %s\n", i, usuario->current->val->identificacao);
+			next(usuario);
+		}
+		
+		printf(">> ");
 
+		scanf("%d", &entrada);
+		getchar();
+		
+		moveAt(entrada, user);
+		user = user->current->val;
+		
+		mostrarUsuario(user);
+	}
+	else if (entrada == 2) {
+		printf("Escolha um recurso:\n\n");
+
+		beginR(emAndamento);
+		beginR(emProcesso);
+		beginR(alocado);
+		beginR(concluido);
+		int i,j,k,l;
+		for(i = 0; i < emAndamento->size; i++) {
+			printf("%d- %s\n", i, emAndamento->current->val->identificacao);
+			nextR(emAndamento);
+		}
+		for(j = i; j < emProcesso->size; j++) {
+			printf("%d- %s\n", j, emProcesso->current->val->identificacao);
+			nextR(emProcesso);
+		}
+		for(k = j; k < alocado->size; k++) {
+			printf("%d- %s\n", k, alocado->current->val->identificacao);
+			nextR(alocado);
+		}
+		for(l = k; l < concluido->size; l++) {
+			printf("%d- %s\n", l, concluido->current->val->identificacao);
+			nextR(concluido);
+		}
+		
+		printf(">> ");
+
+		scanf("%d", &entrada);
+		getchar();
+		
+		if(entrada < emAndamento->size) {
+			moveAtR(entrada, emAndamento);
+			rec = emAndamento->current->val;
+		}
+		else if(entrada >= emAndamento->size && entrada < emProcesso->size) {
+			moveAtR(entrada, emProcesso);
+			rec = emProcesso->current->val;
+		}
+		else if(entrada >= emProcesso->size && entrada < alocado->size) {
+			moveAtR(entrada, alocado);
+			rec = alocado->current->val;
+		}
+		else if(entrada >= alocado->size) {
+			moveAtR(entrada, concluido);
+			rec = concluido->current->val;
+		}
+		
+		mostrarRecursos(rec);
+	}
 }
 
-void relatorios() {
+void relatorios(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido , ULList* usuario) {
 
 }
 
@@ -832,10 +936,10 @@ bool menuPrincipal() {
         menuAlocar(emProcesso, alocado, emAndamento, concluido, usuario);
         break;
     case 2:
-        consulta();
+        consulta(emProcesso, alocado, emAndamento, concluido, usuario);
         break;
     case 3:
-        relatorios();
+        relatorios(emProcesso, alocado, emAndamento, concluido, usuario);
         break;
     case 4:
         cadastrarUsuario(usuario);
