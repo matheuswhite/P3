@@ -56,6 +56,9 @@ void initUsuario(Usuario* user) {
     user->email = (char*)malloc(STRING_SIZE * sizeof(char));
     user->funcao = (char*)malloc(STRING_SIZE * sizeof(char));
 
+    user->nome = (char*)"Vazio";
+    user->email = (char*)"Vazio";
+    user->funcao = (char*)"Vazio";
     user->emAndamento = false;
     user->acesso = 0;
 }
@@ -69,6 +72,9 @@ Usuario* Usuario_new() {
 void initHora(Hora* hora) {
     hora->hora = (char*)malloc(3 * sizeof(char));
     hora->minutos = (char*)malloc(3 * sizeof(char));
+
+    hora->hora = (char*)"00";
+    hora->minutos = (char*)"00";
 }
 
 Hora* Hora_new() {
@@ -82,6 +88,10 @@ void initDataHora(DataHora* data) {
     data->mes = (char*)malloc(3 * sizeof(char));
     data->ano = (char*)malloc(5 * sizeof(char));
     data->hora = Hora_new();
+
+    data->dia = (char*)"00";
+    data->mes = (char*)"00";
+    data->ano = (char*)"0000";
 }
 
 DataHora* DataHora_new() {
@@ -102,17 +112,24 @@ void initRecurso(Recurso* rec) {
     int i, j;
     for (i = 0; i < ROWS; i++) {
         rec->materialApoio[i] = (char*)malloc(STRING_SIZE * sizeof(char));
+        rec->materialApoio[i] = (char*)"Vazio";
     }
 
     rec->participantes = (char**)malloc(ROWS *sizeof(char*));
     for (j = 0; j < ROWS; j++) {
         rec->participantes[j] = (char*)malloc(STRING_SIZE * sizeof(char));
+        rec->participantes[j] = (char*)"Vazio";
     }
 
     rec->inicio = DataHora_new();
     rec->fim = DataHora_new();
 
     rec->status = (char*)"Em andamento";
+    rec->descricao = (char*)"Vazio";;
+    rec->identificacao = (char*)"Vazio";
+    rec->responsavel = (char*)"Vazio";
+    rec->tipo = (char*)"Vazio";
+    rec->tituloAtiv = (char*)"Vazio";
 }
 
 Recurso* Recurso_new() {
@@ -432,8 +449,9 @@ Recurso* findR(LList* list, char* id) {
 
 void cadastrarUsuario(ULList* list) {
     int entrada;
-    char aux_s2[256];
     Usuario* user = Usuario_new();
+    Recurso* rec = Recurso_new();
+    char aux_s2[256];
     bool run = false;
 
     printf("Usuários existentes:\n");
@@ -455,13 +473,12 @@ void cadastrarUsuario(ULList* list) {
 
     user = 0;
 
-    getchar();
     printf("Nome do Usuário\n>> ");
     fgets(aux_s2, sizeof(aux_s2), stdin);
 
     user->nome = aux_s2;
-    /*problema*/
-    //strcpy(user->nome, aux_s);
+
+    printf("Nome: %s\n", user->nome);
 
     printf("E-mail\n>> ");
     fgets(aux_s2, sizeof(aux_s2), stdin);
@@ -593,17 +610,6 @@ void alocar(LList* emProcesso, LList* alocado, ULList* usuarios) {
 }
 
 void mostrarRecursos(Recurso* rec) {
-	/*char* identificacao; v
-    char** participantes;
-    char** materialApoio;
-    char* tipo;
-    DataHora* inicio; v
-    DataHora* fim; v
-    Usuario* responsavel; v
-    char* status; v
-    char* tituloAtiv; v
-    char* descricao; v*/
-	
 	int i;
     printf("Identificação: %s\n", rec->identificacao);
     printf("Data e Hora de inicio: %s/%s/%s %s:%s\n", rec->inicio->dia, rec->inicio->mes, rec->inicio->ano,
@@ -615,12 +621,12 @@ void mostrarRecursos(Recurso* rec) {
 	printf("Titulo da Atividade: %s\n", rec->tituloAtiv);
 	printf("Descricao: %s\n", rec->descricao);
 	printf("Tipo de Atividade: %s\n", rec->tipo);
-	
+
 	printf("Participantes\n");
 	for(i = 0; i < 30; i++) {
 		printf("%d- %s\n", i, rec->participantes[i]);
 	}
-	
+
 	printf("Materiais de apoio\n");
 	for(i = 0; i < 30; i++) {
 		printf("%d- %s\n", i, rec->materialApoio[i]);
@@ -836,28 +842,39 @@ void consulta(LList* emProcesso, LList* alocado, LList* emAndamento, LList* conc
 	int entrada = 0;
 	Recurso* rec = Recurso_new();
 	Usuario* user = Usuario_new();
-	
-	printf("Consulta:\n1- Por usuario\t2- Por recurso");
+
+	printf("Consulta:\n1- Por usuario\t2- Por recurso\n>> ");
 	scanf("%d", &entrada);
 	getchar();
-	
+
 	if(entrada == 1) {
 		begin(usuario);
 		int i;
 		for(i = 0; i < usuario->size; i++) {
-			printf("%d- %s\n", i, usuario->current->val->identificacao);
+			printf("%d- %s\n", i, usuario->current->val->nome);
 			next(usuario);
 		}
-		
+
+        printf("Escolha um numero.(-1 para sair)\n");
 		printf(">> ");
 
 		scanf("%d", &entrada);
 		getchar();
-		
-		moveAt(entrada, user);
-		user = user->current->val;
-		
-		mostrarUsuario(user);
+
+		if(entrada == -1) {
+            return ;
+		}
+
+        if(usuario->size != 0){
+            moveAt(entrada, usuario);
+            user = usuario->current->val;
+
+            mostrarUsuario(user);
+        }
+        else {
+            msgError("Lista vazia\n");
+        }
+
 	}
 	else if (entrada == 2) {
 		printf("Escolha um recurso:\n\n");
@@ -883,40 +900,104 @@ void consulta(LList* emProcesso, LList* alocado, LList* emAndamento, LList* conc
 			printf("%d- %s\n", l, concluido->current->val->identificacao);
 			nextR(concluido);
 		}
-		
+
 		printf(">> ");
 
 		scanf("%d", &entrada);
 		getchar();
-		
+
 		if(entrada < emAndamento->size) {
-			moveAtR(entrada, emAndamento);
-			rec = emAndamento->current->val;
+			if(emAndamento->size != 0) {
+               moveAtR(entrada, emAndamento);
+                rec = emAndamento->current->val;
+			}
+			else {
+                msgError("Lista Vazia\n");
+			}
 		}
 		else if(entrada >= emAndamento->size && entrada < emProcesso->size) {
-			moveAtR(entrada, emProcesso);
-			rec = emProcesso->current->val;
+			if(emProcesso->size != 0) {
+                moveAtR(entrada, emProcesso);
+                rec = emProcesso->current->val;
+            }
+			else {
+                msgError("Lista Vazia\n");
+			}
 		}
 		else if(entrada >= emProcesso->size && entrada < alocado->size) {
-			moveAtR(entrada, alocado);
-			rec = alocado->current->val;
+			if(alocado->size != 0) {
+                moveAtR(entrada, alocado);
+                rec = alocado->current->val;
+			}
+			else {
+                msgError("Lista Vazia\n");
+			}
 		}
 		else if(entrada >= alocado->size) {
-			moveAtR(entrada, concluido);
-			rec = concluido->current->val;
+			if(concluido->size != 0) {
+                moveAtR(entrada, concluido);
+                rec = concluido->current->val;
+			}
+			else {
+                msgError("Lista Vazia\n");
+			}
 		}
-		
+
 		mostrarRecursos(rec);
 	}
+
+	entrada = 0;
+}
+
+int contarTipo(LList* list, char* tipo) {
+    int saida = 0;
+    beginR(list);
+    int i;
+    for(i = 0; i < list->size; i++) {
+        if(strcmp(list->current->val->tipo, tipo) == 0) {
+            saida++;
+        }
+        nextR(list);
+    }
+    return saida;
 }
 
 void relatorios(LList* emProcesso, LList* alocado, LList* emAndamento, LList* concluido , ULList* usuario) {
+    printf("Numero de Usuarios: %d\n", usuario->size);
+    printf("Numero de Recurso:\n");
+    printf("Em Processo: %d\n", emProcesso->size);
+    printf("Alocado: %d\n", alocado->size);
+    printf("Em Andamento: %d\n", emAndamento->size);
+    printf("Concluido: %d\n", concluido->size);
+    int t = emProcesso->size + alocado->size + emAndamento->size + concluido->size;
+    printf("Numero Total de Alocacoes: %d\n", t);
 
+    int a = 0;
+    a += contarTipo(emProcesso,"Aula");
+    a += contarTipo(alocado,"Aula");
+    a += contarTipo(emAndamento,"Aula");
+    a += contarTipo(concluido,"Aula");
+
+    int ap = 0;
+    ap += contarTipo(emProcesso, "Apresentação");
+    ap += contarTipo(alocado, "Apresentação");
+    ap += contarTipo(emAndamento, "Apresentação");
+    ap += contarTipo(concluido, "Apresentação");
+
+    int l = 0;
+    l += contarTipo(emProcesso, "Laboratório");
+    l += contarTipo(alocado, "Laboratório");
+    l += contarTipo(emAndamento, "Laboratório");
+    l += contarTipo(concluido, "Laboratório");
+
+    printf("Numero de %s: %d\n", "Aula", a);
+    printf("Numero de %s: %d\n", "Apresentação", ap);
+    printf("Numero de %s: %d\n", "Laboratório", l);
 }
 
 bool menuPrincipal() {
     bool run = true;
-    int entrada;
+    int entrada = 0;
     LList* emProcesso = LList_new();
     LList* alocado = LList_new();
     LList* emAndamento = LList_new();
@@ -930,6 +1011,7 @@ bool menuPrincipal() {
     printf("4- Cadastrar novo usuário\n");
     printf("5- Sair\n>> ");
     scanf("%d", &entrada);
+    getchar();
 
     switch(entrada) {
     case 1:
@@ -952,6 +1034,7 @@ bool menuPrincipal() {
         break;
     }
 
+    entrada = 0;
     return run;
 }
 
