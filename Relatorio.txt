@@ -1,0 +1,10 @@
+Relatório de projeto de software
+
+•Problemas:
+	Por utilizar somente um arquivo o código ficou muito grande e pouco legível;
+	Ter que duplicar o código da lista ligada, pois era necessário dois tipos diferentes;
+	Dificuldade com a entrada, saída e formatação do terminal;
+	Problemas com a cópia de strings;
+	Falta de um tipo string nativo da linguagem;
+	Criação de menu no terminal;
+	Tratamento de entradas inesperada; 
